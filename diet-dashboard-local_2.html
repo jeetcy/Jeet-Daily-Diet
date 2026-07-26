@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JeetTracker — Roz Ka Thaal</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Karla:wght@400;500;700&display=swap');
+
+  :root{
+    --paper:#F6F2E7; --ink:#26331F; --green-deep:#3C5A34; --green-soft:#7C9A6C; --green-pale:#E4EBDD;
+    --mustard:#D8A93A; --brick:#A8503A; --sky:#5C7C99; --line:#D9CFB6;
+    --bg-dark1:#16241A; --bg-dark2:#0E1712;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:linear-gradient(160deg,var(--bg-dark1),var(--bg-dark2) 70%);color:var(--ink);font-family:'Karla',sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;}
+  .page{max-width:820px;margin:0 auto;padding:20px 16px 60px;}
+
+  .hero{background:linear-gradient(135deg,#2C4527,#1B2C1A);border-radius:20px;padding:26px 22px;margin-bottom:16px;box-shadow:0 10px 30px rgba(0,0,0,0.35);}
+  .hero-top{display:flex;align-items:center;gap:14px;}
+  .hero-emoji{font-size:34px;}
+  .hero h1{font-family:'Fraunces',serif;font-weight:700;font-size:28px;color:#fff;margin:0;line-height:1.1;}
+  .hero-tag{color:#B9CBAE;font-size:12.5px;letter-spacing:.06em;margin-top:3px;}
+
+  .stat-row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px;}
+  @media(min-width:560px){ .stat-row{grid-template-columns:repeat(4,1fr);} }
+  .stat-card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px;backdrop-filter:blur(4px);}
+  .stat-card-label{font-size:11.5px;color:#B9CBAE;font-weight:700;display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+  .stat-card-val{font-family:'Fraunces',serif;font-weight:700;font-size:22px;color:#fff;}
+  .stat-mini-track{height:4px;background:rgba(255,255,255,0.15);border-radius:3px;margin-top:8px;overflow:hidden;}
+  .stat-mini-fill{height:100%;background:var(--mustard);}
+
+  .home-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .home-card{background:#fff;border-radius:16px;padding:18px 16px;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,0.18);transition:transform .12s ease;}
+  .home-card:active{transform:scale(0.98);}
+  .home-card-head{display:flex;align-items:center;gap:9px;margin-bottom:10px;}
+  .home-card-icon{font-size:20px;}
+  .home-card-title{font-family:'Fraunces',serif;font-weight:700;font-size:17px;color:var(--ink);}
+  .home-card ul{margin:0;padding-left:18px;color:#5b5b4f;font-size:12.5px;line-height:1.7;}
+
+  .back-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.1);color:#fff;border:none;border-radius:20px;padding:8px 16px;font-family:'Karla',sans-serif;font-weight:700;font-size:13px;cursor:pointer;margin-bottom:14px;}
+  .view-title{font-family:'Fraunces',serif;font-weight:700;font-size:22px;color:#fff;margin:0 0 14px;}
+
+  .date-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .date-nav-btn{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--line);background:#fff;color:var(--green-deep);font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .date-label{text-align:center;}
+  .date-label .d{font-family:'Fraunces',serif;font-weight:700;font-size:16px;color:#fff;}
+  .date-label .today-pill{font-size:10px;color:var(--mustard);font-weight:700;letter-spacing:.06em;text-transform:uppercase;display:block;margin-top:2px;}
+
+  .progress-row{display:flex;align-items:center;gap:10px;font-size:12px;color:#B9CBAE;margin-bottom:20px;}
+  .progress-track{flex:1;height:5px;background:rgba(255,255,255,0.15);border-radius:3px;overflow:hidden;}
+  .progress-fill{height:100%;background:var(--mustard);transition:width .25s ease;}
+
+  .section{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 16px 6px;margin-bottom:14px;}
+  .section-head{display:flex;align-items:baseline;gap:8px;margin-bottom:10px;}
+  .section-num{font-family:'Fraunces',serif;font-weight:700;font-size:13px;color:var(--mustard);}
+  .section-title{font-family:'Fraunces',serif;font-weight:700;font-size:17px;color:var(--green-deep);}
+  .section-time{margin-left:auto;font-size:11px;color:#9a9a86;font-weight:700;}
+
+  .item{display:flex;align-items:flex-start;gap:10px;padding:9px 2px;border-bottom:1px solid #F0ECDE;cursor:pointer;}
+  .item:last-child{border-bottom:none;}
+  .box{flex:0 0 18px;height:18px;margin-top:2px;border:1.5px solid var(--green-soft);border-radius:5px;position:relative;transition:all .15s ease;}
+  .item.checked .box{background:var(--green-deep);border-color:var(--green-deep);}
+  .item.checked .box::after{content:'';position:absolute;left:5px;top:1px;width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(40deg);}
+  .item-text{font-size:14.5px;line-height:1.4;color:var(--ink);}
+  .item.checked .item-text{color:#9a9a86;text-decoration:line-through;}
+  .item-text .alt{color:#8a8a76;font-weight:400;font-size:13px;}
+
+  .food-log{margin-top:8px;padding-top:10px;border-top:1px dashed var(--line);}
+  .food-log label{font-size:12px;color:#8a8a76;display:block;margin-bottom:5px;}
+  .food-log input{width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;font-family:'Karla',sans-serif;font-size:13.5px;background:var(--paper);color:var(--ink);}
+  .covered-badge{font-size:11px;color:var(--green-deep);font-weight:700;margin-top:6px;}
+
+  .life-row{padding:12px 2px;border-bottom:1px solid #F0ECDE;}
+  .life-row:last-child{border-bottom:none;}
+  .life-label{font-size:13px;font-weight:700;color:var(--green-deep);margin-bottom:8px;display:block;}
+  .num-input{display:flex;align-items:center;gap:10px;}
+  .num-input input{width:80px;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;font-family:'Karla',sans-serif;font-size:15px;font-weight:700;color:var(--ink);background:var(--paper);}
+  .num-input span{font-size:13px;color:#8a8a76;}
+
+  .mood-row{display:flex;gap:8px;}
+  .mood-btn{flex:1;padding:10px 4px;border-radius:10px;border:1.5px solid var(--line);background:var(--paper);cursor:pointer;text-align:center;font-size:12.5px;font-weight:700;color:#8a8a76;}
+  .mood-btn .emoji{display:block;font-size:20px;margin-bottom:3px;}
+  .mood-btn.selected.good{background:var(--green-pale);border-color:var(--green-soft);color:var(--green-deep);}
+  .mood-btn.selected.ok{background:#FBF3E0;border-color:var(--mustard);color:#8a6a1c;}
+  .mood-btn.selected.bad{background:#FBEDE9;border-color:var(--brick);color:var(--brick);}
+
+  .prod-row{display:flex;gap:6px;}
+  .prod-btn{flex:1;padding:9px 2px;border-radius:8px;border:1.5px solid var(--line);background:var(--paper);cursor:pointer;text-align:center;font-size:13px;font-weight:700;color:#8a8a76;}
+  .prod-btn.selected{background:var(--sky);border-color:var(--sky);color:#fff;}
+
+  .goal-item{display:flex;align-items:center;gap:8px;padding:8px 2px;border-bottom:1px solid #F0ECDE;}
+  .goal-item:last-child{border-bottom:none;}
+  .goal-check{flex:0 0 18px;height:18px;border:1.5px solid var(--green-soft);border-radius:5px;cursor:pointer;position:relative;}
+  .goal-check.checked{background:var(--green-deep);border-color:var(--green-deep);}
+  .goal-check.checked::after{content:'';position:absolute;left:5px;top:1px;width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(40deg);}
+  .goal-text{flex:1;font-size:14px;}
+  .goal-text.checked{color:#9a9a86;text-decoration:line-through;}
+  .goal-del{color:#c99;cursor:pointer;font-size:16px;padding:0 4px;}
+  .add-goal-row{display:flex;gap:8px;margin-top:8px;padding-bottom:4px;}
+  .add-goal-row input{flex:1;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;font-family:'Karla',sans-serif;font-size:13.5px;background:var(--paper);}
+  .add-goal-row button{padding:8px 14px;border:none;border-radius:8px;background:var(--green-deep);color:#fff;font-weight:700;font-size:13px;cursor:pointer;}
+
+  textarea.note-input{width:100%;min-height:70px;padding:10px;border:1.5px solid var(--line);border-radius:10px;font-family:'Karla',sans-serif;font-size:14px;color:var(--ink);background:var(--paper);resize:vertical;}
+
+  .tips-panel{background:var(--green-pale);border:1px solid var(--green-soft);border-radius:14px;padding:14px 16px;margin-bottom:14px;}
+  .tips-title{font-family:'Fraunces',serif;font-weight:700;font-size:14.5px;color:var(--green-deep);margin-bottom:8px;}
+  .tip-line{font-size:13.5px;color:var(--ink);line-height:1.5;margin-bottom:6px;padding-left:14px;position:relative;}
+  .tip-line::before{content:'•';position:absolute;left:0;color:var(--mustard);font-weight:700;}
+  .ai-btn{margin-top:8px;padding:8px 14px;border:1.5px solid var(--green-deep);border-radius:20px;background:#fff;color:var(--green-deep);font-weight:700;font-size:12.5px;cursor:pointer;}
+  .ai-result{margin-top:10px;font-size:13.5px;color:var(--ink);line-height:1.55;background:#fff;border-radius:10px;padding:12px;border:1px solid var(--line);display:none;}
+
+  .protein-panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:14px;}
+  .protein-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .protein-title{font-family:'Fraunces',serif;font-weight:700;font-size:14.5px;color:var(--green-deep);}
+  .protein-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;}
+  .protein-badge.low{background:#FBEDE9;color:var(--brick);}
+  .protein-badge.mid{background:#FBF3E0;color:#8a6a1c;}
+  .protein-badge.good{background:var(--green-pale);color:var(--green-deep);}
+  .protein-sources{font-size:12.5px;color:#5b5b4f;line-height:1.5;}
+  .protein-chip{display:inline-block;background:var(--green-pale);color:var(--green-deep);font-size:11px;font-weight:700;padding:2px 8px;border-radius:12px;margin:2px 3px 0 0;}
+
+  .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px;}
+  .stat-card2{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 10px;text-align:center;}
+  .stat-num{font-family:'Fraunces',serif;font-weight:700;font-size:26px;color:var(--green-deep);}
+  .stat-label{font-size:10.5px;color:#8a8a76;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
+  .stat-card2.streak .stat-num{color:var(--brick);}
+
+  .panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px;}
+  .panel-title{font-family:'Fraunces',serif;font-weight:700;font-size:15px;color:var(--green-deep);margin-bottom:12px;}
+
+  .bars{display:flex;align-items:flex-end;gap:5px;height:90px;}
+  .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;}
+  .bar{width:100%;border-radius:4px 4px 0 0;background:var(--green-pale);position:relative;min-height:3px;}
+  .bar.has-data{background:var(--green-soft);}
+  .bar.full{background:var(--green-deep);}
+  .bar.walk{background:var(--sky);}
+  .bar-label{font-size:9px;color:#9a9a86;margin-top:5px;}
+
+  .mood-strip{display:flex;gap:4px;}
+  .mood-cell{flex:1;aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;background:var(--green-pale);}
+  .mood-cell.ok{background:#FBF3E0;}
+  .mood-cell.bad{background:#FBEDE9;}
+
+  .heatmap{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+  .hm-cell{aspect-ratio:1;border-radius:4px;background:var(--green-pale);position:relative;}
+  .hm-cell.l1{background:#DCE7D3;} .hm-cell.l2{background:var(--green-soft);} .hm-cell.l3{background:var(--green-deep);}
+  .hm-cell.today{box-shadow:0 0 0 1.5px var(--mustard);}
+  .hm-dow{font-size:9px;color:#9a9a86;text-align:center;margin-bottom:2px;}
+  .hm-head{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;}
+
+  .history-list{display:flex;flex-direction:column;gap:2px;}
+  .h-row{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid #F0ECDE;font-size:13px;}
+  .h-row:last-child{border-bottom:none;}
+  .h-date{width:64px;color:var(--ink);font-weight:700;flex-shrink:0;}
+  .h-track{flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden;}
+  .h-fill{height:100%;background:var(--mustard);}
+  .h-pct{width:30px;text-align:right;color:#8a8a76;font-size:12px;flex-shrink:0;}
+  .h-mood{width:20px;text-align:center;}
+
+  .empty{font-size:13px;color:#9a9a86;text-align:center;padding:20px 0;}
+  .observe-note{font-size:12.5px;color:var(--brick);background:#FBEDE9;border-radius:8px;padding:10px 12px;margin-bottom:14px;line-height:1.5;}
+
+  .focus-weak{font-size:13.5px;color:var(--brick);background:#FBEDE9;border-radius:8px;padding:10px 12px;margin-bottom:10px;line-height:1.5;}
+  .focus-bars{display:flex;flex-direction:column;gap:8px;}
+  .focus-row{display:flex;align-items:center;gap:10px;font-size:12.5px;}
+  .focus-label{width:76px;flex-shrink:0;color:#5b5b4f;}
+  .focus-track{flex:1;height:8px;background:var(--line);border-radius:4px;overflow:hidden;}
+  .focus-fill{height:100%;background:var(--green-soft);}
+  .focus-fill.weakest{background:var(--brick);}
+  .focus-val{width:34px;text-align:right;color:#8a8a76;font-size:11.5px;}
+
+  .go-row{padding:9px 2px;border-bottom:1px solid #F0ECDE;}
+  .go-row:last-child{border-bottom:none;}
+  .go-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+  .go-name{font-size:13.5px;font-weight:700;color:var(--ink);}
+  .go-rate{font-size:12px;font-weight:700;}
+  .go-rate.low{color:var(--brick);} .go-rate.mid{color:#8a6a1c;} .go-rate.high{color:var(--green-deep);}
+  .go-track{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:4px;}
+  .go-fill{height:100%;background:var(--mustard);}
+  .go-tip{font-size:12px;color:#8a8a76;line-height:1.4;}
+
+  .lg-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px;}
+  .lg-head-row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;}
+  .lg-title{font-family:'Fraunces',serif;font-weight:700;font-size:17px;color:var(--green-deep);}
+  .lg-del{color:#c99;cursor:pointer;font-size:18px;padding:2px 4px;flex-shrink:0;}
+  .lg-meta{font-size:12px;color:#8a8a76;margin-bottom:10px;}
+  .lg-meta.overdue{color:var(--brick);font-weight:700;}
+  .lg-progress-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+  .lg-progress-track{flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden;}
+  .lg-progress-fill{height:100%;background:var(--mustard);}
+  .lg-progress-pct{font-size:12px;font-weight:700;color:var(--green-deep);width:36px;text-align:right;}
+  .lg-notes textarea{width:100%;min-height:50px;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;font-family:'Karla',sans-serif;font-size:13px;background:var(--paper);resize:vertical;}
+  .lg-suggest-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;}
+  .lg-suggest-row select{padding:6px 8px;border:1.5px solid var(--line);border-radius:8px;font-size:12.5px;background:var(--paper);font-family:'Karla',sans-serif;}
+  .lg-suggest-btn{padding:6px 12px;border:1.5px solid var(--sky);border-radius:16px;background:#fff;color:var(--sky);font-weight:700;font-size:12px;cursor:pointer;}
+
+  .lg-ov-card{padding:10px 2px;border-bottom:1px solid #F0ECDE;}
+  .lg-ov-card:last-child{border-bottom:none;}
+  .lg-ov-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;}
+  .lg-ov-title{font-size:13.5px;font-weight:700;color:var(--green-deep);}
+  .lg-ov-pct{font-size:12px;font-weight:700;color:var(--ink);}
+  .lg-ov-track{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:5px;}
+  .lg-ov-fill{height:100%;background:var(--sky);}
+  .lg-ov-tip{font-size:12px;color:#5b5b4f;line-height:1.4;}
+  .lg-ov-tip.warn{color:var(--brick);}
+
+  .new-goal-panel{background:#fff;border:1.5px dashed var(--line);border-radius:14px;padding:16px;margin-bottom:16px;}
+  .new-goal-panel input[type="text"], .new-goal-panel input[type="date"]{width:100%;padding:9px 10px;border:1.5px solid var(--line);border-radius:8px;font-family:'Karla',sans-serif;font-size:14px;background:var(--paper);margin-bottom:8px;}
+  .new-goal-panel label{font-size:11.5px;color:#8a8a76;font-weight:700;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:4px;}
+  .new-goal-panel button.primary{padding:10px 16px;border:none;border-radius:10px;background:var(--green-deep);color:#fff;font-weight:700;font-size:13.5px;cursor:pointer;}
+
+  .quick-add-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+  .quick-add-btn{flex:1;min-width:140px;background:#fff;border:1.5px dashed var(--sky);border-radius:12px;padding:12px;text-align:center;cursor:pointer;font-family:'Fraunces',serif;font-weight:700;font-size:13px;color:var(--sky);}
+
+  footer{margin-top:26px;text-align:center;font-size:11.5px;color:#B9CBAE;font-family:'Fraunces',serif;font-style:italic;}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="hero">
+    <div class="hero-top">
+      <span class="hero-emoji">🚀</span>
+      <div>
+        <h1>JeetTracker</h1>
+        <div class="hero-tag">Track • Improve • Achieve — Roz Ka Thaal</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-card-label">📊 Today's Score</div>
+      <div class="stat-card-val" id="heroScore">0%</div>
+      <div class="stat-mini-track"><div class="stat-mini-fill" id="heroScoreFill" style="width:0%"></div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">🔥 Streak</div>
+      <div class="stat-card-val" id="heroStreak">0 Days</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">🥩 Protein</div>
+      <div class="stat-card-val" id="heroProtein">0/6</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">💧 Water</div>
+      <div class="stat-card-val" id="heroWater">0/8</div>
+    </div>
+  </div>
+
+  <div class="home-grid" id="homeGrid">
+    <div class="home-card" data-nav="health">
+      <div class="home-card-head"><span class="home-card-icon">🍽️</span><span class="home-card-title">Health</span></div>
+      <ul><li>Meal Checklist</li><li>Protein Check</li><li>Water</li><li>Weight</li><li>Sleep</li></ul>
+    </div>
+    <div class="home-card" data-nav="fitness">
+      <div class="home-card-head"><span class="home-card-icon">🏆</span><span class="home-card-title">Fitness</span></div>
+      <ul><li>Walk Log</li><li>Mood</li><li>Productivity</li><li>Din Ka Note</li></ul>
+    </div>
+    <div class="home-card" data-nav="goals">
+      <div class="home-card-head"><span class="home-card-icon">🎯</span><span class="home-card-title">Goals</span></div>
+      <ul><li>Daily Goals</li><li>Long-Term Lakshya</li><li>Habit Consistency</li></ul>
+    </div>
+    <div class="home-card" data-nav="career">
+      <div class="home-card-head"><span class="home-card-icon">💼</span><span class="home-card-title">Career</span></div>
+      <ul><li>Certifications</li><li>Job Applications</li><li>Interview Prep</li></ul>
+    </div>
+    <div class="home-card" data-nav="analytics">
+      <div class="home-card-head"><span class="home-card-icon">📈</span><span class="home-card-title">Analytics</span></div>
+      <ul><li>Trends</li><li>Heatmap</li><li>Focus Area</li><li>History</li></ul>
+    </div>
+    <div class="home-card" data-nav="coach">
+      <div class="home-card-head"><span class="home-card-icon">🤖</span><span class="home-card-title">AI Coach</span></div>
+      <ul><li>Aaj Ke Tips</li><li>Vistrit Salah</li></ul>
+    </div>
+  </div>
+
+  <div id="viewContainer" style="display:none;">
+    <button class="back-btn" id="backBtn">← Home</button>
+
+    <div id="viewHealth" class="view-panel" style="display:none;">
+      <h2 class="view-title">🍽️ Health</h2>
+      <div class="date-bar">
+        <button class="date-nav-btn" id="prevDay">‹</button>
+        <div class="date-label"><div class="d" id="dateLabel"></div><span class="today-pill" id="todayPill"></span></div>
+        <button class="date-nav-btn" id="nextDay">›</button>
+      </div>
+      <div class="progress-row"><span id="progLabel">0/9</span><div class="progress-track"><div class="progress-fill" id="progFill" style="width:0%"></div></div></div>
+      <div class="protein-panel">
+        <div class="protein-head"><span class="protein-title">Protein Check — Aaj</span><span class="protein-badge" id="proteinBadge"></span></div>
+        <div class="protein-sources" id="proteinSources"></div>
+      </div>
+      <div id="sections"></div>
+      <div class="section">
+        <div class="section-head"><span class="section-num">W</span><span class="section-title">Water & Weight</span></div>
+        <div class="life-row"><span class="life-label">Paani (glasses, target 8)</span><div class="num-input"><input type="number" id="waterInput" min="0" placeholder="0"><span>glass</span></div></div>
+        <div class="life-row"><span class="life-label">Weight (kg, optional)</span><div class="num-input"><input type="number" step="0.1" id="weightInput" min="0" placeholder="0"><span>kg</span></div></div>
+      </div>
+    </div>
+
+    <div id="viewFitness" class="view-panel" style="display:none;">
+      <h2 class="view-title">🏆 Fitness</h2>
+      <div class="section">
+        <div class="section-head"><span class="section-num">01</span><span class="section-title">Movement & Din</span></div>
+        <div class="life-row"><span class="life-label">Aaj kitna chala (minutes)</span><div class="num-input"><input type="number" id="walkInput" min="0" placeholder="0"><span>min</span></div></div>
+        <div class="life-row"><span class="life-label">Aaj ka mood</span>
+          <div class="mood-row" id="moodRow">
+            <div class="mood-btn" data-mood="good"><span class="emoji">🙂</span>Achha</div>
+            <div class="mood-btn" data-mood="ok"><span class="emoji">😐</span>Theek</div>
+            <div class="mood-btn" data-mood="bad"><span class="emoji">🙁</span>Kharab</div>
+          </div>
+        </div>
+        <div class="life-row"><span class="life-label">Productivity (1-5)</span>
+          <div class="prod-row" id="prodRow">
+            <div class="prod-btn" data-val="1">1</div><div class="prod-btn" data-val="2">2</div><div class="prod-btn" data-val="3">3</div><div class="prod-btn" data-val="4">4</div><div class="prod-btn" data-val="5">5</div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-head"><span class="section-num">02</span><span class="section-title">Din Kaisa Raha</span></div>
+        <div class="life-row" style="padding-top:0;"><textarea class="note-input" id="noteInput" placeholder="2-3 lines me likho..."></textarea></div>
+      </div>
+    </div>
+
+    <div id="viewGoals" class="view-panel" style="display:none;">
+      <h2 class="view-title">🎯 Goals</h2>
+      <div class="section">
+        <div class="section-head"><span class="section-num">01</span><span class="section-title">Aaj Ke Goals</span></div>
+        <div id="goalsList"></div>
+        <div class="add-goal-row"><input type="text" id="newGoalInput" placeholder="naya goal likho..."><button id="addGoalBtn">Add</button></div>
+      </div>
+      <div class="new-goal-panel">
+        <label>Naya Long-Term Lakshya</label>
+        <input type="text" id="lgTitle" placeholder="jaise: Fitness Goal, Skill Seekhna...">
+        <label>Target Date</label>
+        <input type="date" id="lgDeadline">
+        <button class="primary" id="lgAddBtn">Lakshya Add Karo</button>
+      </div>
+      <div id="longGoalsListGeneral"></div>
+    </div>
+
+    <div id="viewCareer" class="view-panel" style="display:none;">
+      <h2 class="view-title">💼 Career</h2>
+      <div class="quick-add-row">
+        <div class="quick-add-btn" data-quickcareer="cert">+ Certification Goal</div>
+        <div class="quick-add-btn" data-quickcareer="apply">+ Job Applications</div>
+        <div class="quick-add-btn" data-quickcareer="interview">+ Interview Prep</div>
+      </div>
+      <div id="longGoalsListCareer"></div>
+    </div>
+
+    <div id="viewAnalytics" class="view-panel" style="display:none;">
+      <h2 class="view-title">📈 Analytics</h2>
+      <div id="observeNoteWrap"></div>
+      <div class="stat-grid">
+        <div class="stat-card2 streak"><div class="stat-num" id="statStreak">0</div><div class="stat-label">Current Streak</div></div>
+        <div class="stat-card2"><div class="stat-num" id="statBest">0</div><div class="stat-label">Best Streak</div></div>
+        <div class="stat-card2"><div class="stat-num" id="statAvg">0%</div><div class="stat-label">30-Day Avg</div></div>
+      </div>
+      <div class="panel" id="focusPanel" style="display:none;"><div class="panel-title">Is Hafte Kis Pe Kaam Karna Hai</div><div id="focusContent"></div></div>
+      <div class="panel"><div class="panel-title">Diet Completion — Last 14 Din</div><div class="bars" id="barsDiet"></div></div>
+      <div class="panel"><div class="panel-title">Walk (minutes) — Last 14 Din</div><div class="bars" id="barsWalk"></div></div>
+      <div class="panel"><div class="panel-title">Mood — Last 14 Din</div><div class="mood-strip" id="moodStrip"></div></div>
+      <div class="panel"><div class="panel-title">Productivity — Last 14 Din</div><div class="bars" id="barsProd"></div></div>
+      <div class="panel"><div class="panel-title">Weight Trend — Recent</div><div id="weightList"></div></div>
+      <div class="panel"><div class="panel-title" id="monthTitle">Is Mahine</div><div class="hm-head" id="hmHead"></div><div class="heatmap" id="heatmap"></div></div>
+      <div class="panel"><div class="panel-title">Recent History</div><div class="history-list" id="historyList"></div></div>
+      <div class="panel"><div class="panel-title">Roz Ke Goals — Consistency</div><div id="dailyGoalsOverview"></div></div>
+      <div class="panel"><div class="panel-title">Lakshya Overview</div><div id="longGoalsOverview"></div></div>
+    </div>
+
+    <div id="viewCoach" class="view-panel" style="display:none;">
+      <h2 class="view-title">🤖 AI Coach</h2>
+      <div class="tips-panel">
+        <div class="tips-title">Aaj Ke Tips</div>
+        <div id="tipsList"></div>
+        <button class="ai-btn" id="aiBtn">Vistrit Salah Dekho →</button>
+        <div class="ai-result" id="aiResult"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>khaate raho, chalte raho, badhte raho</footer>
+</div>
+
+<script>
+const CONTENT = [
+  { title: 'Subah Uthke', time: '6:00-7:00', num: '01', foodLog:false,
+    items: ['Warm water + nimbu','4-5 bheege badam + 1 akhrot','20-30 min movement — walk / bodyweight / trek practice'] },
+  { title: 'Breakfast', time: 'ghar se nikalne se pehle', num: '02', foodLog:true,
+    items: ['Poha/upma + peanuts ya sprouts <span class="alt">— ya cheela / paneer bhurji / curd+oats</span>','1 glass doodh ya chaas'] },
+  { title: 'Mid-Morning', time: 'office pahunchke', num: '03', foodLog:true,
+    items: ['Roasted chana ya almonds (mutthi bhar)','Ek cup chai/green tea — sugar kam'] },
+  { title: 'Lunch', time: '1:00-1:30 ya jab mile', num: '04', foodLog:true,
+    items: ['Dal (bada portion) + roti/chawal + sabzi <span class="alt">— chana/rajma/paneer bhurji/moong dal rotate karo</span>','1 katori curd','Chhaas khaane ke baad'] },
+  { title: 'Evening', time: '5:30-6:30', num: '05', foodLog:true,
+    items: ['Makhana/roasted chana ka dabba (bahar ka fried avoid)','1 fruit — seb/kela/amla'] },
+  { title: 'Dinner', time: 'jaldi jitna ho sake', num: '06', foodLog:true,
+    items: ['Khichdi / soya-paneer sabzi + roti <span class="alt">— ya curd rice jab bohot late ho</span>','Sone se 2-3 ghante pehle finish'] },
+  { title: 'Raat', time: '10:30-11:00', num: '07', foodLog:false,
+    items: ['Haldi doodh (hafte me 3-4 din)','Screen band — 30 min pehle','7+ ghante neend'] }
+];
+const TOTAL_ITEMS = CONTENT.reduce((s,sec)=>s+sec.items.length,0);
+const DOW = ['S','M','T','W','T','F','S'];
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MOOD_EMOJI = { good:'🙂', ok:'😐', bad:'🙁' };
+const PROTEIN_KEYWORDS = ['dal','paneer','doodh','milk','dahi','curd','chana','rajma','soya','soy','moong','sprout','badam','almond','peanut','mungfali','egg','anda','chaas','makhana','walnut','akhrot','tofu','besan','kaju','cashew','lassi'];
+const GOAL_TEMPLATES = {
+  job: ['Resume update karo latest skills ke sath','LinkedIn profile optimize karo','Hafte me kam se kam 5 jobs apply karo','Naukri/LinkedIn pe job alerts set karo','Mock interview practice karo','Network me 2-3 logo se baat karo','Portfolio/projects list ready karo'],
+  fitness: ['Weekly walk/run distance ka target set karo','Strength training 2x/week','Diet protein target roz hit karo','Monthly progress note karo','Ek naya trek plan karo'],
+  skill: ['Course/certification enroll karo','Roz 30 min practice fix karo','Ek chhota practice project banao','Certificate exam date fix karo'],
+  business: ['Business plan likho','Google Business Profile setup karo','Pehle 5 clients dhundo','Social media presence banao','Pricing aur services list finalize karo']
+};
+const CAREER_QUICK = {
+  cert: { title:'Certification Complete Karna', steps:['Course/certification enroll karo','Roz 30 min practice fix karo','Exam date fix karo'] },
+  apply: { title:'Job Applications', steps:['Resume update karo','Hafte me 5 jobs apply karo','LinkedIn profile optimize karo'] },
+  interview: { title:'Interview Prep', steps:['Common questions practice karo','Mock interview karo','Company research karo'] }
+};
+
+function fmtDate(d){ const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
+function isSameDay(a,b){ return fmtDate(a)===fmtDate(b); }
+function stripHtml(html){ const tmp=document.createElement('div'); tmp.innerHTML=html; return tmp.textContent||''; }
+
+let currentDate = new Date();
+let currentState = {};
+let index = [];
+let goals = [];
+let longGoals = [];
+
+function loadIndex(){ try{ const r=localStorage.getItem('thaal:index'); return r?JSON.parse(r):[]; }catch(e){ return []; } }
+function saveIndex(idx){ try{ localStorage.setItem('thaal:index', JSON.stringify(idx)); }catch(e){} }
+function loadDate(ds){ try{ const r=localStorage.getItem('thaal:'+ds); return r?JSON.parse(r):{}; }catch(e){ return {}; } }
+function saveDate(ds, data){ try{ localStorage.setItem('thaal:'+ds, JSON.stringify(data)); if(!index.includes(ds)){ index.push(ds); index.sort(); saveIndex(index); } }catch(e){} }
+function loadGoals(){ try{ const r=localStorage.getItem('thaal:goals'); return r?JSON.parse(r):[]; }catch(e){ return []; } }
+function saveGoals(g){ try{ localStorage.setItem('thaal:goals', JSON.stringify(g)); }catch(e){} }
+function loadLongGoals(){ try{ const r=localStorage.getItem('thaal:longgoals'); return r?JSON.parse(r):[]; }catch(e){ return []; } }
+function saveLongGoals(g){ try{ localStorage.setItem('thaal:longgoals', JSON.stringify(g)); }catch(e){} }
+
+function lifeOf(data){ return data.life || {}; }
+function foodLogOf(data){ return data.foodLog || {}; }
+function sectionCoverage(data, si){
+  const sec = CONTENT[si]; const total = sec.items.length;
+  let checkedCount = 0; sec.items.forEach((txt, ii)=>{ if(data[si+'-'+ii]) checkedCount++; });
+  const fl = foodLogOf(data); const loggedAlt = fl[si] && fl[si].trim().length > 0;
+  return loggedAlt ? total : checkedCount;
+}
+function countChecked(data){ let sum=0; CONTENT.forEach((sec,si)=>{ sum += sectionCoverage(data, si); }); return sum; }
+function pctFor(data){ return TOTAL_ITEMS ? Math.round(countChecked(data)/TOTAL_ITEMS*100) : 0; }
+
+function collectProteinSources(state){
+  let text = '';
+  CONTENT.forEach((sec,si)=>{ sec.items.forEach((txt,ii)=>{ if(state[si+'-'+ii]) text += ' ' + stripHtml(txt); }); });
+  const fl = foodLogOf(state); Object.values(fl).forEach(v=>{ text += ' ' + v; });
+  text = text.toLowerCase();
+  const found = new Set(); PROTEIN_KEYWORDS.forEach(kw=>{ if(text.includes(kw)) found.add(kw); });
+  return Array.from(found);
+}
+function computeStreak(){
+  const today = new Date(); let streak=0; let d=new Date(today);
+  while(true){ const ds=fmtDate(d); if(pctFor(loadDate(ds))>=50){ streak++; d.setDate(d.getDate()-1); } else break; }
+  return streak;
+}
+
+function renderHero(){
+  const dateStr = fmtDate(new Date());
+  const todayData = loadDate(dateStr);
+  const pct = pctFor(todayData);
+  document.getElementById('heroScore').textContent = pct + '%';
+  document.getElementById('heroScoreFill').style.width = pct + '%';
+  document.getElementById('heroStreak').textContent = computeStreak() + ' Days';
+  const proteinN = collectProteinSources(todayData).length;
+  document.getElementById('heroProtein').textContent = proteinN + '/6';
+  const life = lifeOf(todayData);
+  document.getElementById('heroWater').textContent = (life.water||0) + '/8';
+}
+
+function showHome(){
+  document.getElementById('homeGrid').style.display = '';
+  document.querySelector('.stat-row').style.display = '';
+  document.getElementById('viewContainer').style.display = 'none';
+  renderHero();
+}
+function showView(name){
+  document.getElementById('homeGrid').style.display = 'none';
+  document.getElementById('viewContainer').style.display = '';
+  document.querySelectorAll('.view-panel').forEach(v=>v.style.display='none');
+  document.getElementById('view'+name.charAt(0).toUpperCase()+name.slice(1)).style.display = '';
+  if(name==='health' || name==='fitness') renderTrack();
+  if(name==='goals'){ renderGoals(); renderLongGoalsGeneral(); }
+  if(name==='career') renderLongGoalsCareer();
+  if(name==='analytics') renderDashboard();
+  if(name==='coach') renderTips();
+}
+document.querySelectorAll('[data-nav]').forEach(card=>{
+  card.addEventListener('click', ()=> showView(card.getAttribute('data-nav')));
+});
+document.getElementById('backBtn').onclick = showHome;
+
+function renderTrack(){
+  const dateStr = fmtDate(currentDate);
+  currentState = loadDate(dateStr);
+  if(!currentState.life) currentState.life = {};
+  if(!currentState.foodLog) currentState.foodLog = {};
+
+  const today = new Date();
+  document.getElementById('dateLabel').textContent = currentDate.toLocaleDateString('en-IN',{weekday:'short', day:'numeric', month:'short'});
+  document.getElementById('todayPill').textContent = isSameDay(currentDate, today) ? 'AAJ' : '';
+
+  renderProgress(); renderSections(); renderLifeInputs(); renderProteinCheck();
+  document.getElementById('aiResult').style.display='none';
+  document.getElementById('aiResult').innerHTML='';
+}
+function renderProgress(){
+  const c = countChecked(currentState);
+  document.getElementById('progLabel').textContent = c + '/' + TOTAL_ITEMS;
+  document.getElementById('progFill').style.width = (c/TOTAL_ITEMS*100) + '%';
+}
+function renderSections(){
+  const el = document.getElementById('sections'); el.innerHTML='';
+  CONTENT.forEach((sec, si)=>{
+    const box = document.createElement('div'); box.className='section';
+    let itemsHtml='';
+    sec.items.forEach((txt, ii)=>{
+      const id = si+'-'+ii; const checked = !!currentState[id];
+      itemsHtml += `<div class="item ${checked?'checked':''}" data-id="${id}"><div class="box"></div><div class="item-text">${txt}</div></div>`;
+    });
+    let foodLogHtml='';
+    if(sec.foodLog){
+      const val = (currentState.foodLog[si]) || '';
+      const covered = val.trim().length>0;
+      foodLogHtml = `<div class="food-log"><label>Kuch aur khaya? (plan se alag)</label>
+        <input type="text" data-foodlog="${si}" value="${val.replace(/"/g,'&quot;')}" placeholder="jo bhi khaya likho...">
+        ${covered?'<div class="covered-badge">✓ Is meal ka credit mil gaya — logged food se count ho raha hai</div>':''}
+      </div>`;
+    }
+    box.innerHTML = `<div class="section-head"><span class="section-num">${sec.num}</span><span class="section-title">${sec.title}</span><span class="section-time">${sec.time}</span></div>${itemsHtml}${foodLogHtml}`;
+    el.appendChild(box);
+  });
+  el.querySelectorAll('.item').forEach(item=>{
+    item.addEventListener('click', ()=>{
+      const id = item.getAttribute('data-id');
+      currentState[id] = !currentState[id];
+      item.classList.toggle('checked');
+      renderProgress(); renderProteinCheck();
+      saveDate(fmtDate(currentDate), currentState);
+    });
+  });
+  el.querySelectorAll('[data-foodlog]').forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      const si = inp.getAttribute('data-foodlog');
+      currentState.foodLog[si] = inp.value;
+      const wrap = inp.parentElement; let badge = wrap.querySelector('.covered-badge');
+      const covered = inp.value.trim().length>0;
+      if(covered && !badge){ badge=document.createElement('div'); badge.className='covered-badge'; badge.textContent='✓ Is meal ka credit mil gaya — logged food se count ho raha hai'; wrap.appendChild(badge); }
+      else if(!covered && badge){ badge.remove(); }
+      renderProgress(); renderProteinCheck();
+      saveDate(fmtDate(currentDate), currentState);
+    });
+  });
+}
+function renderLifeInputs(){
+  const life = lifeOf(currentState);
+  const waterInput = document.getElementById('waterInput');
+  if(waterInput){ waterInput.value = life.water || ''; waterInput.oninput = ()=>{ currentState.life.water = parseInt(waterInput.value)||0; saveDate(fmtDate(currentDate), currentState); }; }
+  const weightInput = document.getElementById('weightInput');
+  if(weightInput){ weightInput.value = life.weight || ''; weightInput.oninput = ()=>{ currentState.life.weight = parseFloat(weightInput.value)||null; saveDate(fmtDate(currentDate), currentState); }; }
+
+  const walkInput = document.getElementById('walkInput');
+  if(walkInput){ walkInput.value = life.walk || ''; walkInput.oninput = ()=>{ currentState.life.walk = parseInt(walkInput.value)||0; saveDate(fmtDate(currentDate), currentState); }; }
+
+  document.querySelectorAll('.mood-btn').forEach(btn=>{
+    const m = btn.getAttribute('data-mood');
+    btn.classList.toggle('selected', life.mood===m); btn.classList.toggle(m, life.mood===m);
+    btn.onclick = ()=>{ currentState.life.mood=m; renderLifeInputs(); saveDate(fmtDate(currentDate), currentState); };
+  });
+  document.querySelectorAll('.prod-btn').forEach(btn=>{
+    const v = parseInt(btn.getAttribute('data-val'));
+    btn.classList.toggle('selected', life.productivity===v);
+    btn.onclick = ()=>{ currentState.life.productivity=v; renderLifeInputs(); saveDate(fmtDate(currentDate), currentState); };
+  });
+  const noteInput = document.getElementById('noteInput');
+  if(noteInput){ noteInput.value = life.note||''; noteInput.oninput = ()=>{ currentState.life.note = noteInput.value; saveDate(fmtDate(currentDate), currentState); }; }
+}
+document.getElementById('prevDay').onclick = ()=>{ currentDate.setDate(currentDate.getDate()-1); renderTrack(); };
+document.getElementById('nextDay').onclick = ()=>{
+  const today=new Date(); const next=new Date(currentDate); next.setDate(next.getDate()+1);
+  if(next>today && !isSameDay(next,today)) return;
+  currentDate=next; renderTrack();
+};
+
+function renderProteinCheck(){
+  const sources = collectProteinSources(currentState);
+  const badge = document.getElementById('proteinBadge'); const srcEl = document.getElementById('proteinSources');
+  const n = sources.length; let cls,label,msg;
+  if(n===0){ cls='low'; label='Protein Kam'; msg='Abhi tak koi protein source track nahi hua — dal, paneer, curd ya sprouts add karo.'; }
+  else if(n<=2){ cls='low'; label='Protein Kam'; msg='Sirf '+n+' source detect hua — ek aur add karo.'; }
+  else if(n<=4){ cls='mid'; label='Theek Hai'; msg='Protein coverage theek hai ('+n+' sources).'; }
+  else { cls='good'; label='Accha Coverage'; msg='Aaj protein coverage bahut accha hai ('+n+' sources)!'; }
+  badge.className='protein-badge '+cls; badge.textContent=label;
+  const chips = sources.map(s=>`<span class="protein-chip">${s}</span>`).join('');
+  srcEl.innerHTML = msg + (chips?'<div style="margin-top:6px;">'+chips+'</div>':'');
+}
+
+function renderGoals(){
+  const dateStr = fmtDate(new Date());
+  if(!currentState || fmtDate(currentDate)!==dateStr){ currentDate = new Date(); }
+  currentState = loadDate(fmtDate(currentDate));
+  if(!currentState.life) currentState.life = {};
+  const el = document.getElementById('goalsList'); el.innerHTML='';
+  const life = lifeOf(currentState); if(!life.goals) life.goals={};
+  if(goals.length===0){ el.innerHTML='<div class="empty" style="padding:10px 0;">Koi goal nahi — niche add karo</div>'; }
+  goals.forEach(g=>{
+    const checked = !!life.goals[g.id];
+    const row = document.createElement('div'); row.className='goal-item';
+    row.innerHTML = `<div class="goal-check ${checked?'checked':''}" data-gid="${g.id}"></div><div class="goal-text ${checked?'checked':''}">${g.text}</div><div class="goal-del" data-del="${g.id}">×</div>`;
+    el.appendChild(row);
+  });
+  el.querySelectorAll('.goal-check').forEach(cb=>{ cb.onclick=()=>{ const gid=cb.getAttribute('data-gid'); currentState.life.goals[gid]=!currentState.life.goals[gid]; renderGoals(); saveDate(fmtDate(currentDate), currentState); }; });
+  el.querySelectorAll('.goal-del').forEach(x=>{ x.onclick=()=>{ const gid=x.getAttribute('data-del'); goals=goals.filter(g=>g.id!==gid); saveGoals(goals); renderGoals(); }; });
+}
+document.getElementById('addGoalBtn').onclick = ()=>{
+  const input=document.getElementById('newGoalInput'); const txt=input.value.trim(); if(!txt) return;
+  goals.push({id:'g'+Date.now(), text:txt}); saveGoals(goals); input.value=''; renderGoals();
+};
+document.getElementById('newGoalInput').addEventListener('keypress', e=>{ if(e.key==='Enter') document.getElementById('addGoalBtn').click(); });
+
+function daysRemaining(deadline){
+  if(!deadline) return null;
+  const d=new Date(deadline+'T00:00:00'); const today=new Date(); today.setHours(0,0,0,0);
+  return Math.round((d-today)/86400000);
+}
+function renderLongGoalCard(g){
+  const totalSteps=g.steps.length, doneSteps=g.steps.filter(s=>s.done).length;
+  const pct = totalSteps?Math.round(doneSteps/totalSteps*100):0;
+  const dr = daysRemaining(g.deadline);
+  let metaHtml='';
+  if(g.deadline){
+    const overdue = dr!==null && dr<0;
+    metaHtml = `<div class="lg-meta ${overdue?'overdue':''}">Target: ${new Date(g.deadline+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})} ${dr!==null?(overdue?'('+Math.abs(dr)+' din late)':'('+dr+' din baaki)'):''}</div>`;
+  }
+  const stepsHtml = g.steps.map(s=>`<div class="goal-item"><div class="goal-check ${s.done?'checked':''}" data-step="${g.id}:${s.id}"></div><div class="goal-text ${s.done?'checked':''}">${s.text}</div><div class="goal-del" data-delstep="${g.id}:${s.id}">×</div></div>`).join('');
+  const templateOptions = Object.keys(GOAL_TEMPLATES).map(k=>{ const labels={job:'Job Search',fitness:'Fitness',skill:'Skill/Certification',business:'Business/Freelance'}; return `<option value="${k}">${labels[k]}</option>`; }).join('');
+  const card = document.createElement('div'); card.className='lg-card';
+  card.innerHTML = `
+    <div class="lg-head-row"><div class="lg-title">${g.title}</div><div class="lg-del" data-dellg="${g.id}">×</div></div>
+    ${metaHtml}
+    <div class="lg-progress-row"><div class="lg-progress-track"><div class="lg-progress-fill" style="width:${pct}%"></div></div><div class="lg-progress-pct">${pct}%</div></div>
+    <div>${stepsHtml}</div>
+    <div class="add-goal-row"><input type="text" placeholder="naya step add karo..." data-newstep="${g.id}"><button data-addstep="${g.id}">Add</button></div>
+    <div class="lg-suggest-row"><select data-template="${g.id}">${templateOptions}</select><button class="lg-suggest-btn" data-usetemplate="${g.id}">Suggested Steps Add Karo</button></div>
+    <div class="lg-notes"><textarea placeholder="Notes..." data-lgnote="${g.id}">${g.notes||''}</textarea></div>
+  `;
+  return card;
+}
+function wireLongGoalCard(el){
+  el.querySelectorAll('[data-step]').forEach(cb=>{ cb.onclick=()=>{ const [gid,sid]=cb.getAttribute('data-step').split(':'); const g=longGoals.find(x=>x.id===gid); const s=g.steps.find(x=>x.id===sid); s.done=!s.done; saveLongGoals(longGoals); renderLongGoalsGeneral(); renderLongGoalsCareer(); }; });
+  el.querySelectorAll('[data-delstep]').forEach(x=>{ x.onclick=()=>{ const [gid,sid]=x.getAttribute('data-delstep').split(':'); const g=longGoals.find(g=>g.id===gid); g.steps=g.steps.filter(s=>s.id!==sid); saveLongGoals(longGoals); renderLongGoalsGeneral(); renderLongGoalsCareer(); }; });
+  el.querySelectorAll('[data-addstep]').forEach(btn=>{ btn.onclick=()=>{ const gid=btn.getAttribute('data-addstep'); const input=el.querySelector(`[data-newstep="${gid}"]`); const txt=input.value.trim(); if(!txt) return; const g=longGoals.find(g=>g.id===gid); g.steps.push({id:'s'+Date.now(), text:txt, done:false}); saveLongGoals(longGoals); renderLongGoalsGeneral(); renderLongGoalsCareer(); }; });
+  el.querySelectorAll('[data-usetemplate]').forEach(btn=>{ btn.onclick=()=>{ const gid=btn.getAttribute('data-usetemplate'); const select=el.querySelector(`[data-template="${gid}"]`); const cat=select.value; const g=longGoals.find(g=>g.id===gid); const existing=new Set(g.steps.map(s=>s.text)); GOAL_TEMPLATES[cat].forEach(t=>{ if(!existing.has(t)) g.steps.push({id:'s'+Date.now()+Math.random().toString(36).slice(2,6), text:t, done:false}); }); saveLongGoals(longGoals); renderLongGoalsGeneral(); renderLongGoalsCareer(); }; });
+  el.querySelectorAll('[data-lgnote]').forEach(ta=>{ ta.oninput=()=>{ const gid=ta.getAttribute('data-lgnote'); const g=longGoals.find(g=>g.id===gid); g.notes=ta.value; saveLongGoals(longGoals); }; });
+  el.querySelectorAll('[data-dellg]').forEach(x=>{ x.onclick=()=>{ const gid=x.getAttribute('data-dellg'); longGoals=longGoals.filter(g=>g.id!==gid); saveLongGoals(longGoals); renderLongGoalsGeneral(); renderLongGoalsCareer(); }; });
+}
+function renderLongGoalsGeneral(){
+  const el = document.getElementById('longGoalsListGeneral'); el.innerHTML='';
+  const filtered = longGoals.filter(g=> g.category!=='job');
+  if(filtered.length===0){ el.innerHTML='<div class="empty">Koi general lakshya nahi — upar add karo.</div>'; return; }
+  filtered.forEach(g=> el.appendChild(renderLongGoalCard(g)));
+  wireLongGoalCard(el);
+}
+function renderLongGoalsCareer(){
+  const el = document.getElementById('longGoalsListCareer'); el.innerHTML='';
+  const filtered = longGoals.filter(g=> g.category==='job');
+  if(filtered.length===0){ el.innerHTML='<div class="empty">Koi career goal nahi — upar quick-add try karo.</div>'; }
+  filtered.forEach(g=> el.appendChild(renderLongGoalCard(g)));
+  wireLongGoalCard(el);
+}
+document.getElementById('lgAddBtn').onclick = ()=>{
+  const title=document.getElementById('lgTitle').value.trim(); if(!title) return;
+  const deadline=document.getElementById('lgDeadline').value;
+  longGoals.push({id:'lg'+Date.now(), title, deadline, category:'other', steps:[], notes:''});
+  saveLongGoals(longGoals);
+  document.getElementById('lgTitle').value=''; document.getElementById('lgDeadline').value='';
+  renderLongGoalsGeneral();
+};
+document.querySelectorAll('[data-quickcareer]').forEach(btn=>{
+  btn.onclick = ()=>{
+    const key = btn.getAttribute('data-quickcareer');
+    const tpl = CAREER_QUICK[key];
+    longGoals.push({ id:'lg'+Date.now(), title:tpl.title, deadline:'', category:'job',
+      steps: tpl.steps.map(t=>({id:'s'+Date.now()+Math.random().toString(36).slice(2,6), text:t, done:false})), notes:'' });
+    saveLongGoals(longGoals);
+    renderLongGoalsCareer();
+  };
+});
+
+function computeHistoryStats(daysWindow){
+  const today=new Date();
+  let dietSum=0,dietN=0, walkSum=0,walkN=0, prodSum=0,prodN=0, moodSum=0,moodN=0, proteinSum=0,proteinN=0, sleepYes=0,sleepN=0;
+  for(let i=0;i<daysWindow;i++){
+    const d=new Date(today); d.setDate(d.getDate()-i); const ds=fmtDate(d);
+    if(!index.includes(ds)) continue;
+    const data=loadDate(ds); const life=lifeOf(data);
+    dietSum+=pctFor(data); dietN++;
+    if(life.walk!==undefined && life.walk!==null){ walkSum+=life.walk; walkN++; }
+    if(life.productivity){ prodSum+=life.productivity; prodN++; }
+    if(life.mood){ moodSum += (life.mood==='good'?100:life.mood==='ok'?60:20); moodN++; }
+    const psrc=collectProteinSources(data); proteinSum+=psrc.length; proteinN++;
+    sleepN++; if(data['6-2']) sleepYes++;
+  }
+  return {
+    diet: dietN?dietSum/dietN:null, walk: walkN?Math.min(100,(walkSum/walkN/60)*100):null, walkRaw: walkN?Math.round(walkSum/walkN):null,
+    prod: prodN?(prodSum/prodN)*20:null, mood: moodN?moodSum/moodN:null,
+    protein: proteinN?Math.min(100,(proteinSum/proteinN/6)*100):null, proteinRaw: proteinN?(proteinSum/proteinN).toFixed(1):null,
+    sleep: sleepN?(sleepYes/sleepN)*100:null, hasEnoughData: dietN>=3
+  };
+}
+function renderTips(){
+  const dateStr = fmtDate(new Date());
+  const todayState = loadDate(dateStr);
+  const life = lifeOf(todayState); const pct = pctFor(todayState);
+  const tips=[]; const stats = computeHistoryStats(14);
+  if(pct<40) tips.push('Diet checklist abhi kam hai — dal/curd/roti wale basic items pehle cover karo.');
+  if(stats.hasEnoughData && stats.diet!==null){
+    if(pct < stats.diet-15) tips.push(`Aaj ka diet coverage (${pct}%) tumhare 14-din average (${Math.round(stats.diet)}%) se kaafi kam hai.`);
+    else if(pct > stats.diet+15) tips.push(`Aaj diet coverage (${pct}%) tumhare average se accha raha — badhiya.`);
+  }
+  if(!life.walk || life.walk<20) tips.push('Aaj movement kam hua — 15-20 min ki walk shaam ko fit kar sakte ho.');
+  else if(life.walk>=45) tips.push('Aaj achha movement hua — isi consistency ko trek prep me kaam aayegi.');
+  if(stats.hasEnoughData && stats.walkRaw!==null && life.walk!==undefined){
+    if(life.walk < stats.walkRaw-10) tips.push(`Aaj ${life.walk} min chale, tumhara apna average ${stats.walkRaw} min hai — thoda kam raha.`);
+  }
+  if(!todayState['6-2']) tips.push('Neend ka target abhi tick nahi hua — 7+ ghante ka goal yaad rakhna.');
+  if(life.mood==='bad') tips.push('Aaj mood thoda low laga — chhota break lo, paani piyo, thodi der bahar walk karo ya kisi apne se baat kar lo.');
+  if(life.productivity && life.productivity<=2) tips.push('Productivity low rahi — kal ke liye sirf 1-2 chhote tasks pick karo.');
+  if(tips.length===0) tips.push('Sab kuch balance me hai aaj — bas isi consistency ko continue rakho.');
+  document.getElementById('tipsList').innerHTML = tips.map(t=>`<div class="tip-line">${t}</div>`).join('');
+}
+document.getElementById('aiBtn').onclick = ()=>{
+  const dateStr = fmtDate(new Date());
+  const todayState = loadDate(dateStr);
+  const life = lifeOf(todayState); const pct = pctFor(todayState);
+  const proteinSources = collectProteinSources(todayState);
+  const stats = computeHistoryStats(14);
+  let parts=[];
+  parts.push(`Aaj ka diet coverage ${pct}% hai${stats.hasEnoughData?` (tumhara 14-din average ${Math.round(stats.diet)}% hai)`:''}.`);
+  parts.push(pct<50?'Dal-curd-sabzi ka base pehle strong karo.':'Diet ka base theek chal raha hai.');
+  parts.push(`Protein sources aaj: ${proteinSources.length} (${proteinSources.join(', ')||'koi nahi'})${stats.hasEnoughData?`, tumhara average ${stats.proteinRaw} sources/din hai`:''}.`);
+  if(life.walk!==undefined && life.walk!==null){ parts.push(`Aaj ${life.walk} minute chale${stats.hasEnoughData?` (average ${stats.walkRaw} min)`:''} — ${life.walk>=30?'yeh accha number hai.':'thoda aur badhane ki koshish karo.'}`); }
+  else{ parts.push('Aaj walk record nahi hui — chhoti si 15-20 min walk bhi help karti hai.'); }
+  if(life.mood==='bad') parts.push('Mood thoda kharab laga hai — aaj khud pe zyada pressure mat dalo, aur agar yeh feeling lagatar bani rahe to kisi apne insaan se ya professional se baat karna helpful ho sakta hai.');
+  else if(life.mood==='ok') parts.push('Mood theek-thaak raha — koi chhoti cheez karo jo achi lagti ho.');
+  else if(life.mood==='good') parts.push('Mood accha raha — isi energy ko kal ke goals me channel karo.');
+  if(life.productivity){ if(life.productivity<=2) parts.push('Productivity low rahi — kal sirf top 2 priority tasks pe focus karo.'); else if(life.productivity>=4) parts.push('Productivity strong rahi.'); }
+  const goalsData=life.goals||{}; const doneCount=Object.values(goalsData).filter(Boolean).length;
+  if(goals.length>0) parts.push(`Aaj ke goals: ${doneCount}/${goals.length} complete hue.`);
+  if(longGoals.length>0){
+    const active = longGoals.filter(g=>{ const total=g.steps.length, done=g.steps.filter(s=>s.done).length; return total===0||done<total; });
+    if(active.length>0){ const stalled=active.find(g=>g.steps.length>0 && g.steps.filter(s=>s.done).length===0); if(stalled) parts.push(`Lakshya "${stalled.title}" abhi shuru nahi hua — ek chhota step aaj try karo.`); }
+  }
+  const resultEl=document.getElementById('aiResult'); resultEl.innerHTML=parts.join(' '); resultEl.style.display='block';
+};
+
+function renderDashboard(){
+  const today=new Date(); const dataCache={};
+  function getData(ds){ if(dataCache[ds]!==undefined) return dataCache[ds]; const d=loadDate(ds); dataCache[ds]=d; return d; }
+  function getPct(ds){ return pctFor(getData(ds)); }
+
+  let streak=0; { let d=new Date(today); while(true){ const ds=fmtDate(d); if(getPct(ds)>=50){ streak++; d.setDate(d.getDate()-1); } else break; } }
+  let best=0, run=0, prevDate=null; const sortedIdx=[...index].sort();
+  for(const ds of sortedIdx){
+    if(getPct(ds)>=50){ if(prevDate){ const diff=Math.round((new Date(ds)-new Date(prevDate))/86400000); run=diff===1?run+1:1; } else run=1; best=Math.max(best,run); prevDate=ds; }
+    else { run=0; prevDate=null; }
+  }
+  best=Math.max(best,streak);
+  let sum=0,count=0;
+  for(let i=0;i<30;i++){ const d=new Date(today); d.setDate(d.getDate()-i); const ds=fmtDate(d); if(index.includes(ds)){ sum+=getPct(ds); count++; } }
+  const avg = count?Math.round(sum/count):0;
+
+  document.getElementById('statStreak').textContent=streak;
+  document.getElementById('statBest').textContent=best;
+  document.getElementById('statAvg').textContent=avg+'%';
+
+  const barsDiet=document.getElementById('barsDiet'), barsWalk=document.getElementById('barsWalk'), barsProd=document.getElementById('barsProd'), moodStrip=document.getElementById('moodStrip');
+  barsDiet.innerHTML=''; barsWalk.innerHTML=''; barsProd.innerHTML=''; moodStrip.innerHTML='';
+  let badMoodStreak=0, badMoodRun=0;
+  const weightEntries=[];
+  for(let i=13;i>=0;i--){
+    const d=new Date(today); d.setDate(d.getDate()-i); const ds=fmtDate(d);
+    const has=index.includes(ds); const data=has?getData(ds):{}; const life=lifeOf(data); const p=has?getPct(ds):0;
+    const colD=document.createElement('div'); colD.className='bar-col';
+    colD.innerHTML=`<div class="bar ${!has?'':(p>=90?'full':'has-data')}" style="height:${Math.max(p,4)}%"></div><div class="bar-label">${d.getDate()}</div>`;
+    barsDiet.appendChild(colD);
+    const walkMin=life.walk||0, walkPct=Math.min(100,(walkMin/60)*100);
+    const colW=document.createElement('div'); colW.className='bar-col';
+    colW.innerHTML=`<div class="bar walk" style="height:${Math.max(walkPct,4)}%"></div><div class="bar-label">${walkMin||'-'}</div>`;
+    barsWalk.appendChild(colW);
+    const prod=life.productivity||0, prodPct=(prod/5)*100;
+    const colP=document.createElement('div'); colP.className='bar-col';
+    colP.innerHTML=`<div class="bar ${prod>=4?'full':(prod>0?'has-data':'')}" style="height:${Math.max(prodPct,4)}%"></div><div class="bar-label">${prod||'-'}</div>`;
+    barsProd.appendChild(colP);
+    const moodCell=document.createElement('div'); moodCell.className='mood-cell '+(life.mood||''); moodCell.textContent=life.mood?MOOD_EMOJI[life.mood]:'';
+    moodStrip.appendChild(moodCell);
+    if(i<7){ if(life.mood==='bad'){ badMoodRun++; badMoodStreak=Math.max(badMoodStreak,badMoodRun); } else badMoodRun=0; }
+    if(has && life.weight){ weightEntries.push({ds, weight: life.weight}); }
+  }
+  const obsWrap=document.getElementById('observeNoteWrap');
+  obsWrap.innerHTML = badMoodStreak>=3 ? `<div class="observe-note">Pichle kuch dino me mood kai baar "kharab" laga hai. Isse guzarna normal hai, lekin agar yeh feeling lagatar bani rahe to kisi apne insaan se ya professional se baat karna helpful ho sakta hai.</div>` : '';
+
+  const weightList = document.getElementById('weightList');
+  if(weightEntries.length===0){ weightList.innerHTML = '<div class="empty">Abhi weight log nahi hua — Health tab me daalo.</div>'; }
+  else{
+    let html = '<div class="history-list">';
+    let prevW = null;
+    weightEntries.forEach(e=>{
+      const d = new Date(e.ds); const label = d.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+      const delta = prevW!==null ? (e.weight-prevW).toFixed(1) : null;
+      html += `<div class="h-row"><div class="h-date">${label}</div><div style="flex:1;font-size:13px;">${e.weight} kg</div><div class="h-pct">${delta!==null ? (delta>0?'+':'')+delta : ''}</div></div>`;
+      prevW = e.weight;
+    });
+    html += '</div>';
+    weightList.innerHTML = html;
+  }
+
+  document.getElementById('monthTitle').textContent = MONTHS[today.getMonth()]+' '+today.getFullYear();
+  document.getElementById('hmHead').innerHTML = DOW.map(d=>`<div class="hm-dow">${d}</div>`).join('');
+  const hm=document.getElementById('heatmap'); hm.innerHTML='';
+  const year=today.getFullYear(), month=today.getMonth();
+  const startOffset=new Date(year,month,1).getDay(); const daysInMonth=new Date(year,month+1,0).getDate();
+  for(let i=0;i<startOffset;i++) hm.appendChild(document.createElement('div'));
+  for(let day=1; day<=daysInMonth; day++){
+    const d=new Date(year,month,day); const ds=fmtDate(d);
+    const cell=document.createElement('div'); let cls='hm-cell';
+    if(d<=today){ const has=index.includes(ds); if(has){ const p=getPct(ds); if(p>=80) cls+=' l3'; else if(p>=40) cls+=' l2'; else if(p>0) cls+=' l1'; } }
+    if(isSameDay(d,today)) cls+=' today';
+    cell.className=cls; cell.title=ds; hm.appendChild(cell);
+  }
+
+  const histEl=document.getElementById('historyList');
+  const recent=[...index].sort().reverse().slice(0,10);
+  if(recent.length===0){ histEl.innerHTML='<div class="empty">Abhi tak koi entry nahi.</div>'; }
+  else{
+    histEl.innerHTML='';
+    for(const ds of recent){
+      const p=getPct(ds); const life=lifeOf(getData(ds)); const d=new Date(ds);
+      const label=d.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+      const row=document.createElement('div'); row.className='h-row';
+      row.innerHTML=`<div class="h-date">${label}</div><div class="h-track"><div class="h-fill" style="width:${p}%"></div></div><div class="h-pct">${p}%</div><div class="h-mood">${life.mood?MOOD_EMOJI[life.mood]:''}</div>`;
+      histEl.appendChild(row);
+    }
+  }
+
+  renderFocusPanel(); renderDailyGoalsOverview(); renderLongGoalsOverview();
+}
+function renderFocusPanel(){
+  const stats = computeHistoryStats(14);
+  const panel = document.getElementById('focusPanel');
+  if(!stats.hasEnoughData){ panel.style.display='none'; return; }
+  panel.style.display='';
+  const areas = [
+    {key:'diet',label:'Diet',val:stats.diet}, {key:'walk',label:'Walk',val:stats.walk}, {key:'prod',label:'Productivity',val:stats.prod},
+    {key:'mood',label:'Mood',val:stats.mood}, {key:'protein',label:'Protein',val:stats.protein}, {key:'sleep',label:'Neend',val:stats.sleep}
+  ].filter(a=>a.val!==null);
+  const weakest = areas.reduce((min,a)=> a.val<min.val?a:min, areas[0]);
+  const TIPS = {
+    diet:'Diet coverage sabse kam hai — dal/curd/roti wale basic items pehle consistent karo.',
+    walk:'Walk sabse kam area hai — roz 20-30 min ka chhota target fix karo.',
+    prod:'Productivity sabse weak area hai — roz sirf 1-2 top priority tasks pick karo.',
+    mood:'Mood pattern thoda low raha hai — chhoti cheezein jo achi lagti hain unhe daily routine me shamil karo.',
+    protein:'Protein intake sabse weak area hai — dal/paneer/curd/sprouts har meal me add karo.',
+    sleep:'Neend ka target sabse kam consistent hai — 7+ ghante ka goal is hafte priority banao.'
+  };
+  const el=document.getElementById('focusContent');
+  let html = `<div class="focus-weak">Pichle 14 din me sabse zyada dhyaan <strong>${weakest.label}</strong> pe dena hoga. ${TIPS[weakest.key]}</div><div class="focus-bars">`;
+  areas.forEach(a=>{ html += `<div class="focus-row"><div class="focus-label">${a.label}</div><div class="focus-track"><div class="focus-fill ${a.key===weakest.key?'weakest':''}" style="width:${Math.round(a.val)}%"></div></div><div class="focus-val">${Math.round(a.val)}%</div></div>`; });
+  html += '</div>'; el.innerHTML = html;
+}
+function renderDailyGoalsOverview(){
+  const el=document.getElementById('dailyGoalsOverview');
+  if(goals.length===0){ el.innerHTML='<div class="empty">Koi daily goal nahi bana abhi.</div>'; return; }
+  const daysWindow=14; const today=new Date(); const trackedDates=[];
+  for(let i=0;i<daysWindow;i++){ const d=new Date(today); d.setDate(d.getDate()-i); const ds=fmtDate(d); if(index.includes(ds)) trackedDates.push(ds); }
+  const rows = goals.map(g=>{
+    let done=0; trackedDates.forEach(ds=>{ const data=loadDate(ds); const life=lifeOf(data); if(life.goals && life.goals[g.id]) done++; });
+    const rate = trackedDates.length?Math.round(done/trackedDates.length*100):0;
+    return {g, rate, total:trackedDates.length};
+  }).sort((a,b)=>a.rate-b.rate);
+  let html='';
+  rows.forEach(r=>{
+    const cls = r.rate<40?'low':r.rate<75?'mid':'high';
+    let tip=''; if(r.total===0) tip='Abhi tracking data nahi hai.';
+    else if(r.rate<40) tip='Yeh goal baar-baar chhoot raha hai — chhote/specific step me todo, ya priority check karo.';
+    else if(r.rate<75) tip='Theek chal raha hai, thoda aur consistent karo.'; else tip='Bahut consistent ho isme — badhiya!';
+    html += `<div class="go-row"><div class="go-top"><span class="go-name">${r.g.text}</span><span class="go-rate ${cls}">${r.rate}%</span></div><div class="go-track"><div class="go-fill" style="width:${r.rate}%"></div></div><div class="go-tip">${tip}</div></div>`;
+  });
+  el.innerHTML = html;
+}
+function renderLongGoalsOverview(){
+  const el=document.getElementById('longGoalsOverview');
+  if(longGoals.length===0){ el.innerHTML='<div class="empty">Koi long-term lakshya nahi bana abhi.</div>'; return; }
+  let html='';
+  longGoals.forEach(g=>{
+    const total=g.steps.length, done=g.steps.filter(s=>s.done).length; const pct=total?Math.round(done/total*100):0;
+    const dr=daysRemaining(g.deadline); let tip='',warn=false;
+    if(pct===100){ tip='Complete ho gaya — badhiya!'; }
+    else if(dr!==null && dr<0){ tip='Deadline nikal gayi hai — naya target date set karo.'; warn=true; }
+    else if(total===0){ tip='Abhi koi steps nahi hain — pehle 2-3 chhote steps add karo.'; }
+    else if(done===0){ tip='Abhi shuru nahi hua — pehla step aaj hi karne ki koshish karo.'; warn=true; }
+    else if(dr!==null && dr<=7 && pct<70){ tip='Deadline pass aa rahi hai aur progress slow hai — is hafte extra time do.'; warn=true; }
+    else { tip='Sahi track pe ho, isi consistency ko continue rakho.'; }
+    html += `<div class="lg-ov-card"><div class="lg-ov-top"><span class="lg-ov-title">${g.title}</span><span class="lg-ov-pct">${pct}%</span></div><div class="lg-ov-track"><div class="lg-ov-fill" style="width:${pct}%"></div></div><div class="lg-ov-tip ${warn?'warn':''}">${tip}</div></div>`;
+  });
+  el.innerHTML = html;
+}
+
+(function init(){
+  index = loadIndex();
+  goals = loadGoals();
+  longGoals = loadLongGoals();
+  showHome();
+})();
+</script>
+</body>
+</html>
